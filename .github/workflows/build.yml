@@ -15,8 +15,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      FIREBASE_URL: ${{ secrets.FIREBASE_URL }}         # Custom Firebase URL (if needed)
-      BACKEND_URL: ${{ secrets.BACKEND_URL }}             # Override default backend URL if provided
+      FIREBASE_URL: ${{ secrets.FIREBASE_URL }}                 # Custom Firebase URL (if needed)
+      BACKEND_URL: ${{ secrets.BACKEND_URL }}                   # Override default backend URL if provided
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }} # Override google-services.json if provided
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
