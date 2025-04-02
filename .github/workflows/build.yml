@@ -80,7 +80,7 @@ jobs:
 
       # Upload the built APK as a workflow artifact.
       - name: Upload APK artifact to workflow
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-play-release-apk
           path: app/build/outputs/apk/play/release/*.apk
