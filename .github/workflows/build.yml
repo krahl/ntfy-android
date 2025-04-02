@@ -1,0 +1,97 @@
+name: Android App Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_URL: ${{ secrets.FIREBASE_URL }}         # Custom Firebase URL
+      FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+      BACKEND_URL: ${{ secrets.BACKEND_URL }}             # Optionally override the default backend URL
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set default BACKEND_URL if not provided
+        run: |
+          if [ -z "$BACKEND_URL" ]; then
+            echo "BACKEND_URL=https://ntfy.example.com" >> $GITHUB_ENV
+          fi
+
+      - name: Set version number from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "VERSION_NUMBER=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set up Firebase credentials file
+        run: echo "${FIREBASE_CREDENTIALS}" > firebase-credentials.json
+        env:
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+
+      - name: Build the Android app
+        run: |
+          if [ -n "${VERSION_NUMBER}" ]; then
+            echo "Building release for version ${VERSION_NUMBER}"
+            ./gradlew assembleRelease -PbackendUrl="$BACKEND_URL" -PfirebaseUrl="$FIREBASE_URL" -PversionName="$VERSION_NUMBER"
+          else
+            echo "Building non-tag release"
+            ./gradlew assembleRelease -PbackendUrl="$BACKEND_URL" -PfirebaseUrl="$FIREBASE_URL"
+          fi
+
+      # Always upload the APK as a workflow artifact for easy access.
+      - name: Upload APK artifact to workflow
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
+
+      - name: Remove Firebase credentials file
+        run: rm firebase-credentials.json
+
+      # The following steps run only when the workflow is triggered by a tag (e.g. v1.2.3).
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload APK to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          files: app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
