@@ -15,9 +15,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      FIREBASE_URL: ${{ secrets.FIREBASE_URL }}         # Custom Firebase URL
-      FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
-      BACKEND_URL: ${{ secrets.BACKEND_URL }}             # Optionally override the default backend URL
+      FIREBASE_URL: ${{ secrets.FIREBASE_URL }}         # Custom Firebase URL (if needed)
+      BACKEND_URL: ${{ secrets.BACKEND_URL }}             # Override default backend URL if provided
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,6 +26,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
+
+      # Install and configure the Android SDK.
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 31
+          build-tools: "31.0.0"
+
+      # Create local.properties to point to the Android SDK.
+      - name: Configure local.properties
+        run: echo "sdk.dir=${ANDROID_HOME}" > local.properties
 
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
@@ -38,12 +48,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # Set a default backend URL if one isn't provided.
       - name: Set default BACKEND_URL if not provided
         run: |
           if [ -z "$BACKEND_URL" ]; then
             echo "BACKEND_URL=https://ntfy.example.com" >> $GITHUB_ENV
           fi
 
+      # If building from a tag (e.g. v1.2.3), extract the version number.
       - name: Set version number from tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo "VERSION_NUMBER=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
@@ -51,32 +63,33 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Set up Firebase credentials file
-        run: echo "${FIREBASE_CREDENTIALS}" > firebase-credentials.json
-        env:
-          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+      # Inject google-services.json via secret into the app directory.
+      - name: Set up google-services.json
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > app/google-services.json
 
+      # Build the Play flavor APK (which uses Firebase/FCM).
       - name: Build the Android app
         run: |
           if [ -n "${VERSION_NUMBER}" ]; then
-            echo "Building release for version ${VERSION_NUMBER}"
-            ./gradlew assembleRelease -PbackendUrl="$BACKEND_URL" -PfirebaseUrl="$FIREBASE_URL" -PversionName="$VERSION_NUMBER"
+            echo "Building Play flavor release for version ${VERSION_NUMBER}"
+            ./gradlew assemblePlayRelease -PbackendUrl="$BACKEND_URL" -PfirebaseUrl="$FIREBASE_URL" -PversionName="$VERSION_NUMBER"
           else
-            echo "Building non-tag release"
-            ./gradlew assembleRelease -PbackendUrl="$BACKEND_URL" -PfirebaseUrl="$FIREBASE_URL"
+            echo "Building Play flavor release (non-tag build)"
+            ./gradlew assemblePlayRelease -PbackendUrl="$BACKEND_URL" -PfirebaseUrl="$FIREBASE_URL"
           fi
 
-      # Always upload the APK as a workflow artifact for easy access.
+      # Upload the built APK as a workflow artifact.
       - name: Upload APK artifact to workflow
         uses: actions/upload-artifact@v3
         with:
-          name: app-release-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          name: app-play-release-apk
+          path: app/build/outputs/apk/play/release/*.apk
 
-      - name: Remove Firebase credentials file
-        run: rm firebase-credentials.json
+      # Optionally remove google-services.json after the build for security.
+      - name: Remove google-services.json file
+        run: rm app/google-services.json
 
-      # The following steps run only when the workflow is triggered by a tag (e.g. v1.2.3).
+      # If the workflow is triggered by a tag, create a GitHub Release.
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         id: create_release
@@ -86,12 +99,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Upload the APK to the GitHub Release.
       - name: Upload APK to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref }}
-          files: app/build/outputs/apk/release/app-release.apk
+          files: app/build/outputs/apk/play/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
