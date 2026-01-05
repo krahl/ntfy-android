@@ -39,8 +39,8 @@ jobs:
         run: |
            sed -i 's|<string name="app_base_url" translatable="false">.*</string>|<string name="app_base_url" translatable="false">'"$APP_BASE_URL"'</string>|' app/src/main/res/values/values.xml
 
-      - name: Build Play Debug
-        run: ./gradlew assemblePlayDebug
+      - name: Build Play Release
+        run: ./gradlew assemblePlayRelease
 
-      - name: Build F-Droid Debug
-        run: ./gradlew assembleFdroidDebug
+      - name: Build F-Droid Release
+        run: ./gradlew assembleFdroidRelease
