@@ -44,3 +44,11 @@ jobs:
 
       - name: Build F-Droid Release
         run: ./gradlew assembleFdroidRelease
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: |
+            app/build/outputs/apk/play/release/*.apk
+            app/build/outputs/apk/fdroid/release/*.apk
