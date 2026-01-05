@@ -7,6 +7,36 @@ If you're downloading the APKs from GitHub, they are signed with a certificate w
 ## Build
 For up-to-date building instructions, please see the [official docs](https://docs.ntfy.sh/develop/#android-app).
 
+### Building with GitHub Actions
+This repository includes a GitHub Action to automatically build and release the Android app.
+To enable signing and release automation, you must configure the following **Secrets** and **Variables** in your repository settings.
+
+#### Required Secrets (for Signing)
+1.  **Generate a Keystore**:
+    If you don't have a release keystore, generate one using:
+    ```bash
+    keytool -genkey -v -keystore release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+    ```
+2.  **Encode Keystore**:
+    Convert the keystore to Base64 to store it as a secret:
+    ```bash
+    openssl base64 < release.jks | tr -d '\n' | clip # Copy to clipboard (Windows Git Bash/Linux)
+    # OR on Windows CMD:
+    certutil -encode release.jks tmp.b64 && type tmp.b64 # (Remove headers/footers)
+    ```
+3.  **Add Secrets**:
+    Go to **Settings > Secrets and variables > Actions** and add:
+    *   `SIGNING_KEY_STORE_BASE64`: The Base64 string from above.
+    *   `SIGNING_KEY_ALIAS`: Your key alias (e.g., `my-key-alias`).
+    *   `SIGNING_KEY_PASSWORD`: Your key password.
+    *   `SIGNING_STORE_PASSWORD`: Your keystore password.
+
+#### Optional Configuration (FCM & Base URL)
+*   **FCM Support**:
+    If you want to use your own Firebase account, base64 encode your `google-services.json` (same method as above) and add it as a hex **Secret**: `GOOGLE_SERVICES_JSON_BASE64`.
+*   **Base URL Override**:
+    To point the app to your own self-hosted server by default, add a **Variable** (or Secret) named `APP_BASE_URL` (e.g., `https://ntfy.example.com`).
+
 ## Translations
 We're using [Weblate](https://hosted.weblate.org/projects/ntfy/) to translate the ntfy Android app. We'd love your participation.
 
