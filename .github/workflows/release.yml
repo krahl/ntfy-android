@@ -11,6 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      SIGNING_KEY_STORE_BASE64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
+      SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+      GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+      APP_BASE_URL: ${{ vars.APP_BASE_URL || secrets.APP_BASE_URL }}
 
     steps:
       - name: Checkout code
@@ -27,16 +34,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Decode Google Services (FCM)
-        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
-        env:
-          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        if: env.GOOGLE_SERVICES_JSON_BASE64 != ''
         run: |
           echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > app/google-services.json
 
       - name: Override App Base URL
-        if: ${{ env.APP_BASE_URL != '' }}
-        env:
-          APP_BASE_URL: ${{ vars.APP_BASE_URL || secrets.APP_BASE_URL }}
+        if: env.APP_BASE_URL != ''
         run: |
            sed -i 's|<string name="app_base_url" translatable="false">.*</string>|<string name="app_base_url" translatable="false">'"$APP_BASE_URL"'</string>|' app/src/main/res/values/values.xml
 
@@ -48,18 +51,13 @@ jobs:
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/play/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
-          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          signingKeyBase64: ${{ env.SIGNING_KEY_STORE_BASE64 }}
+          alias: ${{ env.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ env.SIGNING_STORE_PASSWORD }}
+          keyPassword: ${{ env.SIGNING_KEY_PASSWORD }}
 
       - name: Sign AAB
         id: sign_aab
-        env:
-          SIGNING_KEY_STORE_BASE64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
         run: |
           # AAB signing
           echo "$SIGNING_KEY_STORE_BASE64" | base64 --decode > release.jks
