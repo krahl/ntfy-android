@@ -51,13 +51,24 @@ jobs:
       - name: Sign APKs (Release Key)
         if: env.SIGNING_KEY_STORE_BASE64 != ''
         id: sign_app_release
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/play/release
-          signingKeyBase64: ${{ env.SIGNING_KEY_STORE_BASE64 }}
-          alias: ${{ env.SIGNING_KEY_ALIAS }}
-          keyStorePassword: ${{ env.SIGNING_STORE_PASSWORD }}
-          keyPassword: ${{ env.SIGNING_KEY_PASSWORD }}
+        run: |
+          echo "$SIGNING_KEY_STORE_BASE64" | base64 --decode > release.jks
+          
+          BUILD_TOOLS_VERSION=$(ls $ANDROID_HOME/build-tools | sort -r | head -n 1)
+          echo "Using Build Tools: $BUILD_TOOLS_VERSION"
+          ZIPALIGN=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/zipalign
+          APKSIGNER=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner
+
+          # Process Play release
+          for apk in app/build/outputs/apk/play/release/*.apk; do
+             echo "Processing $apk..."
+             aligned_apk="${apk%.*}-aligned.apk"
+             "$ZIPALIGN" -v -p 4 "$apk" "$aligned_apk"
+             
+             echo "Signing $aligned_apk..."
+             "$APKSIGNER" sign --ks release.jks --ks-key-alias "$SIGNING_KEY_ALIAS" --ks-pass "pass:$SIGNING_STORE_PASSWORD" --key-pass "pass:$SIGNING_KEY_PASSWORD" "$aligned_apk"
+          done
+          rm release.jks
 
       - name: Sign F-Droid/Other APKs (Release Key)
         if: env.SIGNING_KEY_STORE_BASE64 != ''
@@ -68,8 +79,12 @@ jobs:
 
             # Sign F-Droid release
             for apk in app/build/outputs/apk/fdroid/release/*.apk; do
-               echo "Signing $apk..."
-               "$APKSIGNER" sign --ks release.jks --ks-key-alias "$SIGNING_KEY_ALIAS" --ks-pass "pass:$SIGNING_STORE_PASSWORD" --key-pass "pass:$SIGNING_KEY_PASSWORD" "$apk"
+               echo "Processing $apk..."
+               aligned_apk="${apk%.*}-aligned.apk"
+               "$ZIPALIGN" -v -p 4 "$apk" "$aligned_apk"
+               
+               echo "Signing $aligned_apk..."
+               "$APKSIGNER" sign --ks release.jks --ks-key-alias "$SIGNING_KEY_ALIAS" --ks-pass "pass:$SIGNING_STORE_PASSWORD" --key-pass "pass:$SIGNING_KEY_PASSWORD" "$aligned_apk"
             done
             rm release.jks
 
@@ -83,8 +98,17 @@ jobs:
           APKSIGNER=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner
           
           for apk in app/build/outputs/apk/*/release/*.apk; do
-            echo "Signing $apk..."
-            "$APKSIGNER" sign --ks debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android "$apk"
+            echo "Processing $apk..."
+            aligned_apk="${apk%.*}-aligned.apk"
+            # Some APKs might already be aligned if created by valid previous steps? No, glob includes unaligned.
+            # But wait, our release signing steps created *-aligned.apk.
+            # This debug step only runs if secrets are missing (fallback). So release steps didn't run.
+            # But the glob will pick up only the unsigned ones.
+            
+            "$ZIPALIGN" -v -p 4 "$apk" "$aligned_apk"
+            
+            echo "Signing $aligned_apk with debug key..."
+            "$APKSIGNER" sign --ks debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android "$aligned_apk"
           done
 
       - name: Upload Artifacts
