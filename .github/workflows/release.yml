@@ -47,14 +47,39 @@ jobs:
         run: ./gradlew assemblePlayRelease bundlePlayRelease
 
       - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
         id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/play/release
-          signingKeyBase64: ${{ env.SIGNING_KEY_STORE_BASE64 }}
-          alias: ${{ env.SIGNING_KEY_ALIAS }}
-          keyStorePassword: ${{ env.SIGNING_STORE_PASSWORD }}
-          keyPassword: ${{ env.SIGNING_KEY_PASSWORD }}
+        env:
+          SIGNING_KEY_STORE_BASE64: ${{ env.SIGNING_KEY_STORE_BASE64 }}
+          SIGNING_KEY_ALIAS: ${{ env.SIGNING_KEY_ALIAS }}
+          SIGNING_STORE_PASSWORD: ${{ env.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_PASSWORD: ${{ env.SIGNING_KEY_PASSWORD }}
+        run: |
+          echo "$SIGNING_KEY_STORE_BASE64" | base64 --decode > release.jks
+          
+          # Find build tools
+          BUILD_TOOLS_VERSION=$(ls $ANDROID_HOME/build-tools | sort -r | head -n 1)
+          echo "Using Build Tools: $BUILD_TOOLS_VERSION"
+          ZIPALIGN=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/zipalign
+          APKSIGNER=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner
+
+          # Process each APK (usually just one)
+          for apk in app/build/outputs/apk/play/release/*.apk; do
+             echo "Processing $apk..."
+             
+             # Zipalign
+             aligned_apk="${apk%.*}-aligned.apk"
+             "$ZIPALIGN" -v -p 4 "$apk" "$aligned_apk"
+             
+             # Sign
+             # Note: apksigner signs in-place or creates a new one?
+             # If we sign the aligned apk, it stays aligned.
+             echo "Signing $aligned_apk..."
+             "$APKSIGNER" sign --ks release.jks --ks-key-alias "$SIGNING_KEY_ALIAS" --ks-pass "pass:$SIGNING_STORE_PASSWORD" --key-pass "pass:$SIGNING_KEY_PASSWORD" "$aligned_apk"
+             
+             # Output for the release step
+             echo "signedReleaseFile=$aligned_apk" >> $GITHUB_OUTPUT
+          done
+          rm release.jks
 
       - name: Sign AAB
         id: sign_aab
