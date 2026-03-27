@@ -24,6 +24,11 @@ The workflow expects these GitHub Actions secrets:
 * `ANDROID_RELEASE_KEY_ALIAS`
 * `ANDROID_RELEASE_KEY_PASSWORD`
 
+Optional GitHub Actions variables:
+
+* `APP_BASE_URL` - if set, the workflow rewrites `app/src/main/res/values/values.xml` before both dev and release builds so `app_base_url` uses your self-hosted ntfy server instead of `https://ntfy.sh`
+  For Play builds, make sure `ANDROID_GOOGLE_SERVICES_JSON` matches that base URL as well.
+
 Signing can also be driven locally via environment variables or Gradle properties:
 
 * `NTFY_SIGNING_PROFILE=dev` with `NTFY_DEV_SIGNING_STORE_FILE`, `NTFY_DEV_SIGNING_STORE_PASSWORD`, `NTFY_DEV_SIGNING_KEY_ALIAS`, `NTFY_DEV_SIGNING_KEY_PASSWORD`
