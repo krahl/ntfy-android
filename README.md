@@ -7,6 +7,8 @@ If you're downloading the APKs from GitHub, they are signed with a certificate w
 ## Build
 For up-to-date building instructions, please see the [official docs](https://docs.ntfy.sh/develop/#android-app).
 
+This repo now also contains a `wear` module for the Wear OS companion app. The watch app syncs subscriptions and auth-related state from the phone app, then loads notifications directly on the watch for a watch-native subscriptions -> notifications -> detail flow.
+
 ### GitHub Actions
 This repository can be built in GitHub Actions via [`.github/workflows/android.yml`](.github/workflows/android.yml).
 

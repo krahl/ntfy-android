@@ -18,7 +18,11 @@ import io.heckel.ntfy.util.validUrl
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
-class Repository(private val sharedPrefs: SharedPreferences, database: Database) {
+class Repository(
+    private val appContext: Context,
+    private val sharedPrefs: SharedPreferences,
+    database: Database
+) {
     private val subscriptionDao = database.subscriptionDao()
     private val notificationDao = database.notificationDao()
     private val userDao = database.userDao()
@@ -84,12 +88,14 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
     @WorkerThread
     suspend fun addSubscription(subscription: Subscription) {
         subscriptionDao.add(subscription)
+        requestWearSync()
     }
 
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
     suspend fun updateSubscription(subscription: Subscription) {
         subscriptionDao.update(subscription)
+        requestWearSync()
     }
 
     fun updateSubscriptionIcon(subscriptionId: Long, icon: String?) {
@@ -102,6 +108,7 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
         notificationDao.removeAll(subscription.id)
         subscriptionDao.remove(subscription.id)
         updateConnectionDetails(subscription.baseUrl, ConnectionState.NOT_APPLICABLE)
+        requestWearSync()
     }
 
     suspend fun getNotifications(): List<Notification> {
@@ -207,10 +214,12 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
 
     suspend fun addUser(user: User) {
         userDao.insert(user)
+        requestWearSync()
     }
 
     suspend fun updateUser(user: User) {
         userDao.update(user)
+        requestWearSync()
     }
 
     suspend fun getUser(baseUrl: String): User? {
@@ -219,6 +228,7 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
 
     suspend fun deleteUser(baseUrl: String) {
         userDao.delete(baseUrl)
+        requestWearSync()
     }
 
     // Trusted certificates
@@ -233,10 +243,12 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
 
     suspend fun addTrustedCertificate(baseUrl: String, pem: String) {
         trustedCertificateDao.insert(TrustedCertificate(baseUrl, pem))
+        requestWearSync()
     }
 
     suspend fun removeTrustedCertificate(baseUrl: String) {
         trustedCertificateDao.delete(baseUrl)
+        requestWearSync()
     }
 
     // Client certificates
@@ -251,10 +263,12 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
 
     suspend fun addClientCertificate(baseUrl: String, p12Base64: String, password: String) {
         clientCertificateDao.insert(ClientCertificate(baseUrl, p12Base64, password))
+        requestWearSync()
     }
 
     suspend fun removeClientCertificate(baseUrl: String) {
         clientCertificateDao.delete(baseUrl)
+        requestWearSync()
     }
 
     fun getPollWorkerVersion(): Int {
@@ -338,6 +352,7 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
                 putInt(SHARED_PREFS_DARK_MODE, mode)
             }
         }
+        requestWearSync()
     }
 
     fun getDarkMode(): Int {
@@ -348,6 +363,7 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
         sharedPrefs.edit(commit = true) {
             putBoolean(SHARED_PREFS_DYNAMIC_COLORS, enabled)
         }
+        requestWearSync()
     }
 
     fun getDynamicColorsEnabled(): Boolean {
@@ -482,6 +498,7 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
                     .putString(SHARED_PREFS_DEFAULT_BASE_URL, baseUrl)
             }
         }
+        requestWearSync()
     }
 
     suspend fun getCustomHeaders(): List<CustomHeader> {
@@ -494,15 +511,18 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
 
     suspend fun addCustomHeader(header: CustomHeader) {
         customHeaderDao.insert(header)
+        requestWearSync()
     }
 
     suspend fun updateCustomHeader(oldHeader: CustomHeader, newHeader: CustomHeader) {
         customHeaderDao.delete(oldHeader.baseUrl, oldHeader.name)
         customHeaderDao.insert(newHeader)
+        requestWearSync()
     }
 
     suspend fun deleteCustomHeader(header: CustomHeader) {
         customHeaderDao.delete(header.baseUrl, header.name)
+        requestWearSync()
     }
 
     fun isGlobalMuted(): Boolean {
@@ -637,6 +657,10 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
         Log.d(TAG, "Connection force reconnect version incremented for $baseUrl: ${connectionForceReconnectVersions[baseUrl]}")
     }
 
+    private fun requestWearSync() {
+        io.heckel.ntfy.wearsync.WearSyncManager.requestSnapshotSync(appContext)
+    }
+
     companion object {
         const val SHARED_PREFS_ID = "MainPreferences"
         const val SHARED_PREFS_POLL_WORKER_VERSION = "PollWorkerVersion"
@@ -716,14 +740,15 @@ class Repository(private val sharedPrefs: SharedPreferences, database: Database)
         private var instance: Repository? = null
 
         fun getInstance(context: Context): Repository {
-            val database = Database.getInstance(context.applicationContext)
-            val sharedPrefs = context.getSharedPreferences(SHARED_PREFS_ID, Context.MODE_PRIVATE)
-            return getInstance(sharedPrefs, database)
+            val appContext = context.applicationContext
+            val database = Database.getInstance(appContext)
+            val sharedPrefs = appContext.getSharedPreferences(SHARED_PREFS_ID, Context.MODE_PRIVATE)
+            return getInstance(appContext, sharedPrefs, database)
         }
 
-        private fun getInstance(sharedPrefs: SharedPreferences, database: Database): Repository {
+        private fun getInstance(context: Context, sharedPrefs: SharedPreferences, database: Database): Repository {
             return synchronized(Repository::class) {
-                val newInstance = instance ?: Repository(sharedPrefs, database)
+                val newInstance = instance ?: Repository(context, sharedPrefs, database)
                 instance = newInstance
                 newInstance
             }
