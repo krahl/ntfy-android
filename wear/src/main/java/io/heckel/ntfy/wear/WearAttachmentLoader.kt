@@ -3,6 +3,7 @@ package io.heckel.ntfy.wear
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import io.heckel.ntfy.R
 import io.heckel.ntfy.db.Attachment
 import io.heckel.ntfy.db.Repository
 import io.heckel.ntfy.util.HttpUtil
@@ -20,10 +21,10 @@ object WearAttachmentLoader {
         val request = HttpUtil.requestBuilder(attachment.url, user, customHeaders).build()
         HttpUtil.longCallClient(context, baseUrl).newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                throw Exception("Unexpected response ${response.code}")
+                throw Exception(context.getString(R.string.wear_error_unexpected_response, response.code))
             }
             return BitmapFactory.decodeStream(response.body.byteStream())
-                ?: throw Exception("Unable to decode image")
+                ?: throw Exception(context.getString(R.string.wear_error_decode_image))
         }
     }
 }

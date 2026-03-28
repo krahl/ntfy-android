@@ -66,6 +66,11 @@ class WearDetailActivity : AppCompatActivity() {
 
         val list = findViewById<RecyclerView>(R.id.wear_detail_list)
         val empty = findViewById<TextView>(R.id.wear_detail_empty)
+        val horizontalPadding = resources.getDimensionPixelSize(
+            if (resources.configuration.isScreenRound) R.dimen.wear_horizontal_padding_round
+            else R.dimen.wear_horizontal_padding
+        )
+        val listBottomPadding = list.paddingBottom
         adapter = WearNotificationAdapter { notification ->
             val intent = Intent(this, WearNotificationActivity::class.java)
             intent.putExtra(WearNotificationActivity.EXTRA_NOTIFICATION_ID, notification.id)
@@ -76,8 +81,13 @@ class WearDetailActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(top = bars.top, bottom = bars.bottom)
-            list.updatePadding(bottom = bars.bottom)
+            view.updatePadding(
+                left = horizontalPadding + bars.left,
+                top = bars.top,
+                right = horizontalPadding + bars.right,
+                bottom = bars.bottom
+            )
+            list.updatePadding(bottom = listBottomPadding + bars.bottom)
             insets
         }
 
@@ -117,7 +127,7 @@ class WearDetailActivity : AppCompatActivity() {
             if (showToast) {
                 Toast.makeText(
                     this,
-                    getString(R.string.wear_detail_refresh_failed, e.message ?: "unknown error"),
+                    getString(R.string.wear_detail_refresh_failed, e.message ?: getString(R.string.wear_error_unknown)),
                     Toast.LENGTH_LONG
                 ).show()
             }
