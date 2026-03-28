@@ -62,3 +62,4 @@ proguard-project.txt
 *.iml
 .idea
 android-sdk/
+_dev_signed/

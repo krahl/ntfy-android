@@ -57,7 +57,7 @@ class WearNotificationActivity : AppCompatActivity() {
         )
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.wear_notification_title_fallback)
+        supportActionBar?.title = ""
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

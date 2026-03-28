@@ -14,7 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.appbar.MaterialToolbar
 import io.heckel.ntfy.R
 import io.heckel.ntfy.app.Application
 import io.heckel.ntfy.db.Subscription
@@ -40,9 +39,6 @@ class WearMainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_wear_main)
 
         val root = findViewById<LinearLayout>(R.id.wear_main_root)
-        val toolbar = findViewById<MaterialToolbar>(R.id.wear_main_toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.title = getString(R.string.wear_main_title)
 
         refreshLayout = findViewById(R.id.wear_main_refresh)
         refreshLayout.setColorSchemeColors(Colors.swipeToRefreshColor(this))
