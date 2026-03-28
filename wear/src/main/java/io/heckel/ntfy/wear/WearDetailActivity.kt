@@ -52,9 +52,11 @@ class WearDetailActivity : AppCompatActivity() {
 
         val root = findViewById<android.view.View>(R.id.wear_detail_root)
         val toolbar = findViewById<MaterialToolbar>(R.id.wear_detail_toolbar)
+        val titleView = findViewById<TextView>(R.id.wear_detail_title)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = intent.getStringExtra(EXTRA_SUBSCRIPTION_TITLE) ?: getString(R.string.wear_main_title)
+        supportActionBar?.title = ""
+        titleView.text = intent.getStringExtra(EXTRA_SUBSCRIPTION_TITLE) ?: getString(R.string.wear_main_title)
 
         refreshLayout = findViewById(R.id.wear_detail_refresh)
         refreshLayout.setColorSchemeColors(Colors.swipeToRefreshColor(this))

@@ -2,6 +2,7 @@ package io.heckel.ntfy.db
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Build
 import androidx.annotation.WorkerThread
@@ -356,7 +357,12 @@ class Repository(
     }
 
     fun getDarkMode(): Int {
-        return sharedPrefs.getInt(SHARED_PREFS_DARK_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        val defaultMode = if (appContext.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        return sharedPrefs.getInt(SHARED_PREFS_DARK_MODE, defaultMode)
     }
 
     fun setDynamicColorsEnabled(enabled: Boolean) {

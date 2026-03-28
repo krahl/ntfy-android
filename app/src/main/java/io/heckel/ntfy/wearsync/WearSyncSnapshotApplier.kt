@@ -1,6 +1,8 @@
 package io.heckel.ntfy.wearsync
 
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.appcompat.app.AppCompatDelegate
 import io.heckel.ntfy.db.ClientCertificate
 import io.heckel.ntfy.db.CustomHeader
 import io.heckel.ntfy.db.Repository
@@ -19,7 +21,15 @@ object WearSyncSnapshotApplier {
         syncClientCertificates(repository, snapshot.clientCertificates)
 
         repository.setDefaultBaseUrl(snapshot.prefs.defaultBaseUrl.orEmpty())
-        repository.setDarkMode(snapshot.prefs.darkMode)
+        val darkMode = if (
+            context.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH) &&
+            snapshot.prefs.darkMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        ) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            snapshot.prefs.darkMode
+        }
+        repository.setDarkMode(darkMode)
         repository.setDynamicColorsEnabled(snapshot.prefs.dynamicColorsEnabled)
     }
 

@@ -7,16 +7,15 @@
     android:background="?android:attr/colorBackground"
     android:orientation="vertical">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/wear_main_toolbar"
+    <TextView
+        android:id="@+id/wear_main_title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:title="@string/wear_main_title"
-        android:titleTextColor="?attr/colorOnSurface"
-        app:navigationIconTint="?attr/colorOnSurface" />
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:text="@string/wear_main_title"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/wear_main_refresh"
