@@ -41,6 +41,10 @@ app/fdroid/release/
 app/fdroid/debug/
 app/play/release/
 app/play/debug/
+*.zip
+.gradle-ci/
+.gradle-home/
+.android-home/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -57,3 +61,4 @@ proguard-project.txt
 # Android Studio/IDEA
 *.iml
 .idea
+android-sdk/

@@ -53,7 +53,7 @@ class Log(private val logsDao: LogDao) {
             $maybeScrubLine
             Device info:
             --
-            ntfy: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR})
+            ntfy: ${BuildConfig.VERSION_NAME} (${buildFlavor()})
             OS: ${System.getProperty("os.version")}
             Android: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})
             Model: ${Build.DEVICE}

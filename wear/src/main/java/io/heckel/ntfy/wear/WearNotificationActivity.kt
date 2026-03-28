@@ -23,6 +23,7 @@ import io.heckel.ntfy.db.Action
 import io.heckel.ntfy.db.Attachment
 import io.heckel.ntfy.db.Notification
 import io.heckel.ntfy.db.Repository
+import io.heckel.ntfy.db.isMarkdown
 import io.heckel.ntfy.msg.NotificationService
 import io.heckel.ntfy.util.MarkwonFactory
 import io.heckel.ntfy.util.copyToClipboard
