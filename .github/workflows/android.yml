@@ -82,7 +82,7 @@ jobs:
           NTFY_DEV_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_DEV_STORE_PASSWORD }}
           NTFY_DEV_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_DEV_KEY_ALIAS }}
           NTFY_DEV_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_DEV_KEY_PASSWORD }}
-        run: ./gradlew --stacktrace --no-daemon assembleFdroidRelease assemblePlayRelease
+        run: ./gradlew --stacktrace --no-daemon assembleFdroidRelease assemblePlayRelease :wear:assembleRelease
 
       - name: Upload branch artifacts
         uses: actions/upload-artifact@v4
@@ -91,6 +91,7 @@ jobs:
           path: |
             app/build/outputs/apk/fdroid/release/*.apk
             app/build/outputs/apk/play/release/*.apk
+            wear/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
   build-release:
@@ -173,7 +174,7 @@ jobs:
           NTFY_RELEASE_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
           NTFY_RELEASE_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
           NTFY_RELEASE_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
-        run: ./gradlew --stacktrace --no-daemon assembleFdroidRelease assemblePlayRelease bundleFdroidRelease bundlePlayRelease
+        run: ./gradlew --stacktrace --no-daemon assembleFdroidRelease assemblePlayRelease bundleFdroidRelease bundlePlayRelease :wear:assembleRelease
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
@@ -184,6 +185,7 @@ jobs:
             app/build/outputs/apk/play/release/*.apk
             app/build/outputs/bundle/fdroidRelease/*.aab
             app/build/outputs/bundle/playRelease/*.aab
+            wear/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
       - name: Publish GitHub release assets
@@ -195,3 +197,4 @@ jobs:
             app/build/outputs/apk/play/release/*.apk
             app/build/outputs/bundle/fdroidRelease/*.aab
             app/build/outputs/bundle/playRelease/*.aab
+            wear/build/outputs/apk/release/*.apk

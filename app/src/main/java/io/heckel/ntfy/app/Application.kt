@@ -7,6 +7,7 @@ import com.google.android.material.color.DynamicColors
 import io.heckel.ntfy.db.Repository
 import io.heckel.ntfy.service.SubscriberServiceManager
 import io.heckel.ntfy.util.Log
+import io.heckel.ntfy.wearsync.WearSyncManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,6 +30,7 @@ class Application : Application() {
             DynamicColors.applyToActivitiesIfAvailable(this)
         }
         registerNetworkCallback()
+        WearSyncManager.requestSnapshotSync(this)
     }
 
     private fun registerNetworkCallback() {

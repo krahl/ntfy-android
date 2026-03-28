@@ -1,0 +1,159 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id 'com.google.devtools.ksp'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+def envOrProperty = { name ->
+    def value = project.findProperty(name)
+    return value != null ? value : System.getenv(name)
+}
+
+def signingConfigPresent = { prefix ->
+    ["STORE_FILE", "STORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD"].every { suffix ->
+        def value = envOrProperty("${prefix}_${suffix}")
+        value != null && !value.toString().trim().isEmpty()
+    }
+}
+
+def selectedSigningConfigName = null
+def signingProfile = envOrProperty("NTFY_SIGNING_PROFILE")
+def versionNameOverride = envOrProperty("NTFY_VERSION_NAME")
+def selectedVersionName = (versionNameOverride != null && !versionNameOverride.toString().trim().isEmpty()) ? versionNameOverride.toString().trim() : "1.24.0"
+if (signingProfile == "dev" && signingConfigPresent("NTFY_DEV_SIGNING")) {
+    selectedSigningConfigName = "dev"
+} else if (signingProfile == "release" && signingConfigPresent("NTFY_RELEASE_SIGNING")) {
+    selectedSigningConfigName = "release"
+}
+
+android {
+    namespace "io.heckel.ntfy"
+    compileSdkVersion 36
+
+    signingConfigs {
+        if (signingConfigPresent("NTFY_DEV_SIGNING")) {
+            dev {
+                storeFile rootProject.file(envOrProperty("NTFY_DEV_SIGNING_STORE_FILE"))
+                storePassword envOrProperty("NTFY_DEV_SIGNING_STORE_PASSWORD")
+                keyAlias envOrProperty("NTFY_DEV_SIGNING_KEY_ALIAS")
+                keyPassword envOrProperty("NTFY_DEV_SIGNING_KEY_PASSWORD")
+            }
+        }
+        if (signingConfigPresent("NTFY_RELEASE_SIGNING")) {
+            release {
+                storeFile rootProject.file(envOrProperty("NTFY_RELEASE_SIGNING_STORE_FILE"))
+                storePassword envOrProperty("NTFY_RELEASE_SIGNING_STORE_PASSWORD")
+                keyAlias envOrProperty("NTFY_RELEASE_SIGNING_KEY_ALIAS")
+                keyPassword envOrProperty("NTFY_RELEASE_SIGNING_KEY_PASSWORD")
+            }
+        }
+    }
+
+    defaultConfig {
+        applicationId "io.heckel.ntfy.wear"
+        minSdkVersion 26
+        targetSdkVersion 36
+
+        versionCode 60
+        versionName selectedVersionName
+
+        buildConfigField 'boolean', 'FIREBASE_AVAILABLE', 'false'
+        buildConfigField 'boolean', 'RATE_APP_AVAILABLE', 'false'
+        buildConfigField 'boolean', 'PAYMENT_LINKS_AVAILABLE', 'true'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
+
+        buildFeatures {
+            buildConfig true
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            debuggable false
+            if (selectedSigningConfigName != null) {
+                signingConfig signingConfigs.getByName(selectedSigningConfigName)
+            }
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs += ['../app/src/main/java', '../app/src/fdroid/java']
+            res.srcDirs += ['../app/src/main/res', 'src/main/res']
+            resources.srcDirs += ['../app/src/main/resources']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+            freeCompilerArgs = [
+                '-Xjvm-default=all-compatibility'
+            ]
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.appcompat:appcompat:1.7.1"
+    implementation "androidx.core:core-ktx:1.17.0"
+    implementation "androidx.constraintlayout:constraintlayout:2.2.1"
+    implementation "androidx.activity:activity-ktx:1.12.4"
+    implementation "androidx.fragment:fragment-ktx:1.8.9"
+    implementation "androidx.work:work-runtime-ktx:2.11.1"
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation "androidx.cardview:cardview:1.0.0"
+
+    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'com.google.android.gms:play-services-wearable:19.0.0'
+
+    def room_version = "2.8.4"
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
+
+    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+    implementation "androidx.recyclerview:recyclerview:1.4.0"
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
+    implementation "com.google.android.material:material:1.13.0"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.10.0"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.github.stfalcon-studio:StfalconImageViewer:1.0.1'
+
+    def glide_version = "5.0.5"
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    ksp "com.github.bumptech.glide:ksp:$glide_version"
+
+    implementation 'me.saket:better-link-movement-method:2.2.0'
+    implementation 'io.noties.markwon:core:4.6.2'
+    implementation 'io.noties.markwon:image-picasso:4.6.2'
+    implementation 'io.noties.markwon:image:4.6.2'
+    implementation 'io.noties.markwon:linkify:4.6.2'
+    implementation 'io.noties.markwon:ext-tables:4.6.2'
+    implementation 'io.noties.markwon:ext-strikethrough:4.6.2'
+    implementation "pl.droidsonroids.gif:android-gif-drawable:1.2.31"
+    implementation "com.caverock:androidsvg:1.4"
+}

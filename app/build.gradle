@@ -154,6 +154,7 @@ dependencies {
 
     // Firebase, sigh ... (only Google Play)
     playImplementation 'com.google.firebase:firebase-messaging:25.0.1'
+    playImplementation 'com.google.android.gms:play-services-wearable:19.0.0'
 
     // RecyclerView
     implementation "androidx.recyclerview:recyclerview:1.4.0"

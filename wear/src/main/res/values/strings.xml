@@ -1,0 +1,21 @@
+<resources>
+    <string name="wear_app_name">ntfy Wear</string>
+    <string name="wear_main_title">Subscriptions</string>
+    <string name="wear_main_empty">No synced subscriptions yet.</string>
+    <string name="wear_main_empty_hint">Open the phone app nearby to sync your ntfy topics.</string>
+    <string name="wear_subscription_counts">%1$d new / %2$d total</string>
+    <string name="wear_subscription_counts_empty">No cached notifications yet</string>
+    <string name="wear_detail_empty">No cached notifications yet.</string>
+    <string name="wear_detail_refresh_failed">Refresh failed: %1$s</string>
+    <string name="wear_detail_refresh_done">%1$d new notification(s)</string>
+    <string name="wear_notification_title_fallback">Notification</string>
+    <string name="wear_notification_open_link">Open link</string>
+    <string name="wear_notification_open_image">Open image</string>
+    <string name="wear_notification_open_image_failed">Unable to load image: %1$s</string>
+    <string name="wear_notification_actions_heading">Actions</string>
+    <string name="wear_notification_action_unsupported">This action is not supported on Wear yet.</string>
+    <string name="wear_notification_indicator_image">image</string>
+    <string name="wear_notification_indicator_link">link</string>
+    <string name="wear_notification_indicator_actions">%1$d action(s)</string>
+    <string name="wear_notification_attachment">Attachment: %1$s</string>
+</resources>
