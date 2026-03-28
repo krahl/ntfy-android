@@ -492,4 +492,27 @@
     <string name="settings_advanced_connection_alert_three_hours">Nach 3 Stunden</string>
     <string name="settings_advanced_connection_alert_twelve_hours">Nach 12 Stunden</string>
     <string name="connection_alert_snoozed_toast">Meldung über Verbindungsverlust ausgesetzt für %1$d Std</string>
+
+    <string name="wear_app_name">ntfy Wear</string>
+    <string name="wear_main_title">Abos</string>
+    <string name="wear_main_empty">Noch keine synchronisierten Abos.</string>
+    <string name="wear_main_empty_hint">Öffne die Telefon-App in der Nähe, um deine ntfy-Themen zu synchronisieren.</string>
+    <string name="wear_subscription_counts">%1$d neu / %2$d gesamt</string>
+    <string name="wear_subscription_counts_empty">Noch keine zwischengespeicherten Benachrichtigungen</string>
+    <string name="wear_detail_empty">Noch keine zwischengespeicherten Benachrichtigungen.</string>
+    <string name="wear_detail_refresh_failed">Aktualisierung fehlgeschlagen: %1$s</string>
+    <string name="wear_detail_refresh_done">%1$d neue Benachrichtigung(en)</string>
+    <string name="wear_notification_title_fallback">Benachrichtigung</string>
+    <string name="wear_notification_open_link">Link öffnen</string>
+    <string name="wear_notification_open_image">Bild öffnen</string>
+    <string name="wear_notification_open_image_failed">Bild konnte nicht geladen werden: %1$s</string>
+    <string name="wear_notification_actions_heading">Aktionen</string>
+    <string name="wear_notification_action_unsupported">Diese Aktion wird auf Wear noch nicht unterstützt.</string>
+    <string name="wear_notification_indicator_image">Bild</string>
+    <string name="wear_notification_indicator_link">Link</string>
+    <string name="wear_notification_indicator_actions">%1$d Aktion(en)</string>
+    <string name="wear_notification_attachment">Anhang: %1$s</string>
+    <string name="wear_error_unknown">unbekannter Fehler</string>
+    <string name="wear_error_unexpected_response">Unerwartete Antwort %1$d</string>
+    <string name="wear_error_decode_image">Bild konnte nicht dekodiert werden</string>
 </resources>
