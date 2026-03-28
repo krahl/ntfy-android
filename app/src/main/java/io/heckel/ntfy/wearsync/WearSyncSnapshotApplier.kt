@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatDelegate
 import io.heckel.ntfy.db.ClientCertificate
 import io.heckel.ntfy.db.CustomHeader
+import io.heckel.ntfy.db.Notification
 import io.heckel.ntfy.db.Repository
 import io.heckel.ntfy.db.Subscription
 import io.heckel.ntfy.db.TrustedCertificate
@@ -15,6 +16,7 @@ object WearSyncSnapshotApplier {
         val repository = Repository.getInstance(context.applicationContext)
 
         syncSubscriptions(repository, snapshot.subscriptions.map { it.toSubscription() })
+        syncNotifications(repository, snapshot.notifications)
         syncUsers(repository, snapshot.users)
         syncCustomHeaders(repository, snapshot.customHeaders)
         syncTrustedCertificates(repository, snapshot.trustedCertificates)
@@ -49,6 +51,25 @@ object WearSyncSnapshotApplier {
         existing.values
             .filter { it.id !in incomingIds }
             .forEach { repository.removeSubscription(it) }
+    }
+
+    private suspend fun syncNotifications(repository: Repository, incoming: List<Notification>) {
+        val existing = repository.getNotifications().associateBy { it.id to it.subscriptionId }
+        val incomingKeys = incoming.map { it.id to it.subscriptionId }.toSet()
+
+        incoming.forEach { notification ->
+            val key = notification.id to notification.subscriptionId
+            val current = existing[key]
+            when {
+                current == null -> repository.addNotification(notification)
+                current != notification -> repository.updateNotification(notification)
+            }
+        }
+
+        existing.values
+            .filter { (it.id to it.subscriptionId) !in incomingKeys }
+            .filter { !it.deleted }
+            .forEach { repository.markAsDeleted(it.id) }
     }
 
     private suspend fun syncUsers(repository: Repository, incoming: List<User>) {

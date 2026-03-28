@@ -149,27 +149,33 @@ class Repository(
         }
         subscriptionDao.updateLastNotificationId(notification.subscriptionId, notification.id)
         notificationDao.add(notification)
+        requestWearSync()
         return true
     }
 
     fun updateNotification(notification: Notification) {
         notificationDao.update(notification)
+        requestWearSync()
     }
 
     fun undeleteNotification(notificationId: String) {
         notificationDao.undelete(notificationId)
+        requestWearSync()
     }
 
     fun markAsDeleted(notificationId: String) {
         notificationDao.markAsDeleted(notificationId)
+        requestWearSync()
     }
 
     fun markAsDeletedBySequenceId(subscriptionId: Long, sequenceId: String) {
         notificationDao.markAsDeletedBySequenceId(subscriptionId, sequenceId)
+        requestWearSync()
     }
 
     fun updateLastNotificationId(subscriptionId: Long, notificationId: String) {
         subscriptionDao.updateLastNotificationId(subscriptionId, notificationId)
+        requestWearSync()
     }
 
     /**
@@ -183,22 +189,27 @@ class Repository(
 
     fun markAllAsDeleted(subscriptionId: Long) {
         notificationDao.markAllAsDeleted(subscriptionId)
+        requestWearSync()
     }
 
     fun markAllAsRead(subscriptionId: Long) {
         notificationDao.markAllAsRead(subscriptionId)
+        requestWearSync()
     }
 
     fun markAsReadBySequenceId(subscriptionId: Long, sequenceId: String) {
         notificationDao.markAsReadBySequenceId(subscriptionId, sequenceId)
+        requestWearSync()
     }
 
     fun markAsDeletedIfOlderThan(subscriptionId: Long, olderThanTimestamp: Long) {
         notificationDao.markAsDeletedIfOlderThan(subscriptionId, olderThanTimestamp)
+        requestWearSync()
     }
 
     fun removeNotificationsIfOlderThan(subscriptionId: Long, olderThanTimestamp: Long) {
         notificationDao.removeIfOlderThan(subscriptionId, olderThanTimestamp)
+        requestWearSync()
     }
 
     suspend fun getUsers(): List<User> {

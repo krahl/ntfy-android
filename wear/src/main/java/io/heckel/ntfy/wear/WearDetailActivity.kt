@@ -83,9 +83,12 @@ class WearDetailActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val roundTopPadding = resources.getDimensionPixelSize(
+                if (resources.configuration.isScreenRound) R.dimen.wear_toolbar_top_padding_round else 0
+            )
             view.updatePadding(
                 left = horizontalPadding + bars.left,
-                top = bars.top,
+                top = bars.top + roundTopPadding,
                 right = horizontalPadding + bars.right,
                 bottom = bars.bottom
             )
