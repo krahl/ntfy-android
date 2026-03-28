@@ -52,6 +52,11 @@ class WearMainActivity : AppCompatActivity() {
 
         val list = findViewById<RecyclerView>(R.id.wear_main_list)
         val empty = findViewById<android.view.View>(R.id.wear_main_empty)
+        val horizontalPadding = resources.getDimensionPixelSize(
+            if (resources.configuration.isScreenRound) R.dimen.wear_horizontal_padding_round
+            else R.dimen.wear_horizontal_padding
+        )
+        val listBottomPadding = list.paddingBottom
         adapter = WearSubscriptionAdapter(getString(R.string.app_base_url)) { subscription ->
             openSubscription(subscription)
         }
@@ -60,8 +65,13 @@ class WearMainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(top = bars.top, bottom = bars.bottom)
-            list.updatePadding(bottom = bars.bottom)
+            view.updatePadding(
+                left = horizontalPadding + bars.left,
+                top = bars.top,
+                right = horizontalPadding + bars.right,
+                bottom = bars.bottom
+            )
+            list.updatePadding(bottom = listBottomPadding + bars.bottom)
             insets
         }
 

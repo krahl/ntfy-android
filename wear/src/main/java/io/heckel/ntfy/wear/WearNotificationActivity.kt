@@ -51,13 +51,22 @@ class WearNotificationActivity : AppCompatActivity() {
 
         val root = findViewById<LinearLayout>(R.id.wear_notification_root)
         val toolbar = findViewById<MaterialToolbar>(R.id.wear_notification_toolbar)
+        val horizontalPadding = resources.getDimensionPixelSize(
+            if (resources.configuration.isScreenRound) R.dimen.wear_horizontal_padding_round
+            else R.dimen.wear_horizontal_padding
+        )
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.wear_notification_title_fallback)
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(top = bars.top, bottom = bars.bottom)
+            view.updatePadding(
+                left = horizontalPadding + bars.left,
+                top = bars.top,
+                right = horizontalPadding + bars.right,
+                bottom = bars.bottom
+            )
             insets
         }
 
@@ -183,7 +192,7 @@ class WearNotificationActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toast.makeText(
                 this,
-                getString(R.string.wear_notification_open_image_failed, e.message ?: "unknown error"),
+                getString(R.string.wear_notification_open_image_failed, e.message ?: getString(R.string.wear_error_unknown)),
                 Toast.LENGTH_LONG
             ).show()
         } finally {
