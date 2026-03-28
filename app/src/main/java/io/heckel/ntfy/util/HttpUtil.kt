@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * All clients are configured with SSL/TLS settings from CertUtil for custom certificate support.
  */
 object HttpUtil {
-    val USER_AGENT = "ntfy/${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}; Android ${Build.VERSION.RELEASE}; SDK ${Build.VERSION.SDK_INT})"
+    val USER_AGENT = "ntfy/${BuildConfig.VERSION_NAME} (${buildFlavor()}; Android ${Build.VERSION.RELEASE}; SDK ${Build.VERSION.SDK_INT})"
 
     /**
      * Client for regular API calls (auth, poll, etc.).
@@ -97,4 +97,3 @@ object HttpUtil {
             .writeTimeout(15, TimeUnit.SECONDS)
     }
 }
-

@@ -22,6 +22,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import io.heckel.ntfy.BuildConfig
 import io.heckel.ntfy.R
 import io.heckel.ntfy.db.ACTION_PROGRESS_FAILED
 import io.heckel.ntfy.db.ACTION_PROGRESS_ONGOING
@@ -73,6 +74,14 @@ fun displayName(appBaseUrl: String?, subscription: Subscription) : String {
         return subscription.topic
     }
     return subscriptionTopicShortUrl(subscription)
+}
+
+fun buildFlavor(): String {
+    return try {
+        BuildConfig::class.java.getField("FLAVOR").get(null)?.toString().orEmpty()
+    } catch (_: Exception) {
+        ""
+    }
 }
 
 fun shortUrl(url: String) = url
