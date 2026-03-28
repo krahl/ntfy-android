@@ -3,4 +3,5 @@
     <dimen name="fab_margin">24dp</dimen>
     <dimen name="wear_horizontal_padding">0dp</dimen>
     <dimen name="wear_horizontal_padding_round">12dp</dimen>
+    <dimen name="wear_toolbar_top_padding_round">8dp</dimen>
 </resources>

@@ -56,6 +56,7 @@ object WearSyncManager {
             val snapshot = WearSyncSnapshot(
                 generatedAt = System.currentTimeMillis(),
                 subscriptions = repository.getSubscriptions().map { it.toWearSyncSubscription() },
+                notifications = repository.getNotifications(),
                 users = repository.getUsers(),
                 customHeaders = repository.getCustomHeaders(),
                 trustedCertificates = repository.getTrustedCertificates(),
@@ -71,7 +72,7 @@ object WearSyncManager {
                 dataMap.putString(DATA_KEY_JSON, gson.toJson(snapshot))
             }
             Tasks.await(Wearable.getDataClient(context).putDataItem(request.asPutDataRequest().setUrgent()))
-            Log.d(TAG, "Pushed Wear snapshot with ${snapshot.subscriptions.size} subscription(s)")
+            Log.d(TAG, "Pushed Wear snapshot with ${snapshot.subscriptions.size} subscription(s) and ${snapshot.notifications.size} notification(s)")
         } catch (e: Exception) {
             Log.w(TAG, "Unable to push Wear snapshot", e)
         }
