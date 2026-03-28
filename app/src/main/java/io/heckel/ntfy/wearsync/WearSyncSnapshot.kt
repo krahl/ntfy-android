@@ -3,6 +3,7 @@ package io.heckel.ntfy.wearsync
 import io.heckel.ntfy.db.ClientCertificate
 import io.heckel.ntfy.db.ConnectionDetails
 import io.heckel.ntfy.db.CustomHeader
+import io.heckel.ntfy.db.Notification
 import io.heckel.ntfy.db.Subscription
 import io.heckel.ntfy.db.TrustedCertificate
 import io.heckel.ntfy.db.User
@@ -10,6 +11,7 @@ import io.heckel.ntfy.db.User
 data class WearSyncSnapshot(
     val generatedAt: Long,
     val subscriptions: List<WearSyncSubscription>,
+    val notifications: List<Notification>,
     val users: List<User>,
     val customHeaders: List<CustomHeader>,
     val trustedCertificates: List<TrustedCertificate>,
