@@ -718,7 +718,7 @@ class SettingsActivity : AppCompatActivity(), PreferenceFragmentCompat.OnPrefere
             // Version
             val versionPrefId = context?.getString(R.string.settings_about_version_key) ?: return
             val versionPref: Preference? = findPreference(versionPrefId)
-            val version = getString(R.string.settings_about_version_format, BuildConfig.VERSION_NAME, BuildConfig.FLAVOR)
+            val version = getString(R.string.settings_about_version_format, BuildConfig.VERSION_NAME, buildFlavor())
             versionPref?.summary = version
             versionPref?.onPreferenceClickListener = OnPreferenceClickListener {
                 val context = context ?: return@OnPreferenceClickListener false
